@@ -1,0 +1,15 @@
+1. Create a deck of cards
+3. Order of the game:
+    - User places a bet.
+    - Both computer and user are dealt three cards. Two are facing up. One faces down.
+    - User and computer take turns to raise their bets. Order of moves are as follows:
+    - User: no additional bet or raise.
+    - Computer: match user’s raise, match user’s raise and raise bet, or fold (give-up).
+    - User (If computer did additional raise): match the raise or fold.
+    - Face down card is revealed and the winner is decided.
+    
+Possible hands (weakest to strongest) are: pair < flush < straight < triple < straight-flush
+    - Pair: two cards of same value
+    - Flush: five cards of the same suit (order doesn't matter)
+    - Straight: five cards in a row w/ different suits
+    - Straight-flush: five cards in a row (all same suit)
