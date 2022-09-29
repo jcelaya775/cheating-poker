@@ -28,6 +28,8 @@ class Player:
     def __init__(self, name, hand=None):
         self.name = name
         self.hand = hand # array of cards
+        self.bet = 0
+        self.balance = 0
 
     def draw_from(self, deck, face_down=False):
         randIdx = randint(0, len(deck) - 1)
@@ -115,7 +117,6 @@ class Player:
 class Game:
     def __init__(self, deck=None):
         self.deck = deck
-        self.bet = 0
 
     # Return a randomly sorted deck of cards
     # Format: [[suit, value], [suit, value], ...]
@@ -147,8 +148,18 @@ class Game:
             return 0
 
     def show_hands_safe(self):
-        pass
-    
+        print("Your hand:")
+        for card in self.user.hand:
+            if not card.face_down:
+                print(card.suit, card.value)
+        print()
+
+        print("Computer's hand:")
+        for card in self.computer.hand:
+            if not card.face_down:
+                print(card.suit, card.value)
+        print()
+
     def reveal_hands(self):
         print("Your hand:")
         for card in self.user.hand:
@@ -161,13 +172,17 @@ class Game:
         print()
 
     def decide_winner(self):
+        hands = ["None", "Pair", "Flush", "Straight", "Triple", "Straight-flush"]
         result = self.compare_hands()
+
+        # TODO
         if result == 1:
-            print(f"You have won with a {self.user.get_hand_type()}!")
+            self.user.balance += self.current_bet
+            print(f"You have won with a {hands[self.user.get_hand_type().value]}")
         elif result == -1:
-            print(f"The computer has won with a {self.computer.get_hand_type()}.")
+            print(f"The computer has won with a {hands[self.computer.get_hand_type().value]}.")
         else:
-            print(f"You have tied with the computer with a {self.user.get_hand_type()}.")
+            print(f"You have tied with the computer with a {hands[self.user.get_hand_type().value]}.")
 
     # Runs the game loop
     def play(self):
@@ -180,8 +195,8 @@ class Game:
         # 4. Both players take turns to raise their bets.
 
         # User places a bet
-        self.bet = int(input("Place your bet: "))
-        self.user.place_bet()
+        bet = int(input("Place your bet: "))
+        self.user.place_bet(bet)
 
         # Both players are dealth three cards. 2 face up and 1 face down.
         self.user.draw_from(self.deck)
@@ -196,13 +211,16 @@ class Game:
         # User (If computer did additional raise): match the raise or fold.
         user_placed_bet = True
         computer_placed_bet = False
-        
+
         # Both players take turns to raise their bets.
         while user_placed_bet and computer_placed_bet:
+            self.current_bet = max(self.computer.bet, self.user.bet)
+            
             if user_placed_bet: # Computer's turn
                 option = self.computer.calculate_choice(self.user)
 
                 if option == 2:
+                    self.computer.place_bet(self.current_bet + 10)
                     computer_placed_bet = True
                 else:
                     computer_placed_bet = False
@@ -210,15 +228,20 @@ class Game:
                 self.computer.make_choice(option)
             else: # User's turn
                 # TODO: make a function that handles displaying information to the console.
-                option = input("""Current bet: ${computer.bet}. Choose your option:
+                print("Current hands:")
+                self.show_hands_safe()
+                option = input(f"""Current bet: ${max(self.user.bet, self.computer.bet)}. Choose your option:
                                         1. Match
                                         2. Raise
                                         3. Fold""")
 
-                if option == 2:
-                    user_placed_bet = True
-                else:
+                if option == 1 or option == 3:
                     user_placed_bet = False
+                if option == 2:
+                    bet = int(input("Place your bet: "))
+                    assert bet > self.current_bet, f"Your raise should be higher than the current bet of ${self.current_bet}"
+                    self.user.place_bet(bet)
+                    user_placed_bet = True
                     
                 self.user.make_choice(option)
         
@@ -230,7 +253,7 @@ class Game:
 def main():
     game = Game()
     game.init_deck()
-    Game.play()
+    game.play()
 
 
 main()
